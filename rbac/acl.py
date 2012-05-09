@@ -35,6 +35,8 @@ class Registry(object):
         The added rule will allow the role and its all children roles to
         operate the resource.
         """
+        assert not role or role in self._roles
+        assert not resource or resource in self._resources
         self._allowed[role, operation, resource] = assertion
 
     def deny(self, role, operation, resource, assertion=None):
@@ -43,29 +45,34 @@ class Registry(object):
         The added rule will deny the role and its all children roles to
         operate the resource.
         """
+        assert not role or role in self._roles
+        assert not resource or resource in self._resources
         self._denied[role, operation, resource] = assertion
 
     def is_allowed(self, role, operation, resource):
+        """Check the permission."""
+        assert not role or role in self._roles
+        assert not resource or resource in self._resources
+
         roles = set(get_family(self._roles, role))
         operations = set([None, operation])
         resources = set(get_family(self._resources, resource))
 
+        is_allowed = False
+        default_assertion = lambda *args: True
+
         for permission in itertools.product(roles, operations, resources):
             if permission in self._denied:
-                assertion = self._denied[permission]
-                if not assertion:
-                    return False  # denied by rule
+                assertion = self._denied[permission] or default_assertion
                 if assertion(self, role, operation, resource):
-                    return False  # denied by rule and assertion
+                    return False  # denied by rule immediately
 
             if permission in self._allowed:
-                assertion = self._allowed[permission]
-                if not assertion:
-                    return True  # allowed by rule
+                assertion = self._allowed[permission] or default_assertion
                 if assertion(self, role, operation, resource):
-                    return True  # allowed by rule and assertion
+                    is_allowed = True  # allowed by rule
 
-        return False  # default to deny
+        return is_allowed
 
 
 def get_family(all_parents, current):
