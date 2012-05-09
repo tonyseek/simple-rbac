@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-from setuptools import setup, find_packages
+import setuptools
 
 
 metadata = {'name': "Simple RBAC",
             'version': "0.1",
-            'packages': find_packages(),
+            'packages': ["rbac"],
             'author': "TonySeek",
             'author_email': "tonyseek@gmail.com",
-            'license': "MIT"}
+            'license': "MIT",
+            'test_suite': "tests.run_tests"}
 
 
 if __name__ == "__main__":
-    setup(**metadata)
+    setuptools.setup(**metadata)
