@@ -51,9 +51,9 @@ else:
     print("Students chould not view courses.")
 
 if acl.is_allowed("junior-student", "learn", "senior-course"):
-    print("Junior students chould learn courses.")
+    print("Junior students chould learn senior courses.")
 else:
-    print("Junior students chould not learn courses.")
+    print("Junior students chould not learn senior courses.")
 ```
 
 
