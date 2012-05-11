@@ -1,7 +1,7 @@
 Simple RBAC
 ===========
 
-This is a simple role based control access utility in Python.
+This is a simple role based access control utility in Python.
 
 
 Quick Start
