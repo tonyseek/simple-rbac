@@ -50,7 +50,12 @@ class Registry(object):
         self._denied[role, operation, resource] = assertion
 
     def is_allowed(self, role, operation, resource):
-        """Check the permission."""
+        """Check the permission.
+
+        If the access is denied, the function will return False; if the access
+        is allowed, the function will return True; if there is any rule for
+        the access, the function will return None.
+        """
         assert not role or role in self._roles
         assert not resource or resource in self._resources
 
@@ -58,7 +63,7 @@ class Registry(object):
         operations = set([None, operation])
         resources = set(get_family(self._resources, resource))
 
-        is_allowed = False
+        is_allowed = None
         default_assertion = lambda *args: True
 
         for permission in itertools.product(roles, operations, resources):
