@@ -52,9 +52,9 @@ class Registry(object):
     def is_allowed(self, role, operation, resource):
         """Check the permission.
 
-        If the access is denied, the function will return False; if the access
-        is allowed, the function will return True; if there is any rule for
-        the access, the function will return None.
+        If the access is denied, this method will return False; if the access
+        is allowed, this method will return True; if there is not any rule
+        for the access, this method will return None.
         """
         assert not role or role in self._roles
         assert not resource or resource in self._resources
@@ -77,6 +77,17 @@ class Registry(object):
                 if assertion(self, role, operation, resource):
                     is_allowed = True  # allowed by rule
 
+        return is_allowed
+
+    def is_any_allowed(self, roles, operation, resource):
+        """Check the permission with many roles."""
+        is_allowed = None
+        for role in roles:
+            is_allowed = self.is_allowed(role, operation, resource)
+            if is_allowed is False:
+                return False
+            elif is_allowed is True:
+                is_allowed = True
         return is_allowed
 
 
