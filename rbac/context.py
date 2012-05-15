@@ -22,15 +22,15 @@ class IdentityContext(object):
 
     def __init__(self, acl, roles_loader=None):
         self.acl = acl
-        self.set_role_loader(roles_loader)
+        self.set_roles_loader(roles_loader)
 
-    def set_role_loader(self, role_loader):
+    def set_roles_loader(self, role_loader):
         self.load_roles = role_loader
 
     def check_permission(self, operation, resource, **exception_kwargs):
         checker = functools.partial(self._docheck, operation=operation,
                                     resource=resource, **exception_kwargs)
-        return functools.partial(PermissionChecker, checker=checker)
+        return functools.partial(PermissionChecker, checker)
 
     def _docheck(self, operation, resource, **exception_kwargs):
         roles = self.load_roles()
@@ -44,3 +44,4 @@ class PermissionDenied(Exception):
     def __init__(self, message="", **kwargs):
         super(PermissionDenied, self).__init__(message)
         self.kwargs = kwargs
+        self.kwargs['message'] = message
