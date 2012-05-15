@@ -37,27 +37,49 @@ class RBACAclTestCase(unittest.TestCase):
         self.acl.allow("writer", "new", "news")
 
         # test "view" operation
-        for role in ["actived_user", "writer", "manager", "editor"]:
+        roles = ["actived_user", "writer", "manager", "editor"]
+
+        for role in roles:
             for resource in ["news", "event"]:
                 self.assertTrue(self.acl.is_allowed(role, "view", resource))
             for resource in ["post", "infor"]:
                 self.assertFalse(self.acl.is_allowed(role, "view", resource))
 
+        for resource in ["news", "event"]:
+            self.assertTrue(self.acl.is_any_allowed(roles, "view", resource))
+        for resource in ["post", "infor"]:
+            self.assertFalse(self.acl.is_any_allowed(roles, "view", resource))
+
         for resource in ["post", "news", "infor", "event"]:
             self.assertFalse(self.acl.is_allowed("user", "view", resource))
             self.assertTrue(self.acl.is_allowed("super", "view", resource))
             self.assertTrue(self.acl.is_allowed("super", "new", resource))
+            self.assertTrue(self.acl.is_any_allowed(["user", "super"],
+                "view", resource))
+
 
         # test "new" operation
-        for role in ["writer", "editor"]:
+        roles = ["writer", "editor"]
+
+        for role in roles:
             for resource in ["news", "event"]:
                 self.assertTrue(self.acl.is_allowed(role, "new", resource))
             for resource in ["post", "infor"]:
                 self.assertFalse(self.acl.is_allowed(role, "new", resource))
 
-        for role in ["user", "manager"]:
+        for resource in ["news", "event"]:
+            self.assertTrue(self.acl.is_any_allowed(roles, "new", resource))
+        for resource in ["post", "infor"]:
+            self.assertFalse(self.acl.is_any_allowed(roles, "new", resource))
+
+
+        roles = ["user", "manager"]
+
+        for role in roles:
             for resource in ["news", "event", "post", "infor"]:
                 self.assertFalse(self.acl.is_allowed(role, "new", resource))
+        for resource in ["news", "event", "post", "infor"]:
+            self.assertFalse(self.acl.is_any_allowed(roles, "new", resource))
 
     def test_deny(self):
         # add allowed rule and denied rule
@@ -65,20 +87,34 @@ class RBACAclTestCase(unittest.TestCase):
         self.acl.deny("manager", "new", "comment")
 
         # test allowed rules
-        for role in ["actived_user", "writer"]:
+        roles = ["actived_user", "writer"]
+
+        for role in roles:
             self.assertTrue(self.acl.is_allowed(role, "new", "comment"))
 
+        self.assertTrue(self.acl.is_any_allowed(roles, "new", "comment"))
+
+
         # test denied rules
-        for role in ["manager", "editor"]:
+        roles = ["manager", "editor"]
+
+        for role in roles:
             self.assertFalse(self.acl.is_allowed(role, "new", "comment"))
+
+        self.assertFalse(self.acl.is_any_allowed(roles, "new", "comment"))
 
     def test_undefined(self):
         # test denied undefined rule
-        for role in ["user", "actived_user", "writer", "manager", "editor"]:
-            for resource in ["comment", "post", "news", "infor", "event"]:
+        roles = ["user", "actived_user", "writer", "manager", "editor"]
+        
+        for resource in ["comment", "post", "news", "infor", "event"]:
+            for role in roles:
                 self.assertFalse(self.acl.is_allowed(role, "x", resource))
                 self.assertFalse(self.acl.is_allowed(role, "", resource))
                 self.assertFalse(self.acl.is_allowed(role, None, resource))
+            self.assertFalse(self.acl.is_any_allowed(roles, "x", resource))
+            self.assertFalse(self.acl.is_any_allowed(roles, "", resource))
+            self.assertFalse(self.acl.is_any_allowed(roles, None, resource))
 
         # test `None` defined rule
         for resource in ["comment", "post", "news", "infor", "event", None]:
