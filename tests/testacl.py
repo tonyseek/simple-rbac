@@ -57,7 +57,6 @@ class RBACAclTestCase(unittest.TestCase):
             self.assertTrue(self.acl.is_any_allowed(["user", "super"],
                 "view", resource))
 
-
         # test "new" operation
         roles = ["writer", "editor"]
 
@@ -71,7 +70,6 @@ class RBACAclTestCase(unittest.TestCase):
             self.assertTrue(self.acl.is_any_allowed(roles, "new", resource))
         for resource in ["post", "infor"]:
             self.assertFalse(self.acl.is_any_allowed(roles, "new", resource))
-
 
         roles = ["user", "manager"]
 
@@ -94,7 +92,6 @@ class RBACAclTestCase(unittest.TestCase):
 
         self.assertTrue(self.acl.is_any_allowed(roles, "new", "comment"))
 
-
         # test denied rules
         roles = ["manager", "editor"]
 
@@ -106,7 +103,7 @@ class RBACAclTestCase(unittest.TestCase):
     def test_undefined(self):
         # test denied undefined rule
         roles = ["user", "actived_user", "writer", "manager", "editor"]
-        
+
         for resource in ["comment", "post", "news", "infor", "event"]:
             for role in roles:
                 self.assertFalse(self.acl.is_allowed(role, "x", resource))
