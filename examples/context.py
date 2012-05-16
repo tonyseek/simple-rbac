@@ -30,7 +30,7 @@ acl.deny("bad man", None, "article")
 def first_load_roles():
     yield "staff"
 
-print "Now you are %s." % ", ".join(context.load_roles())
+print "* Now you are %s." % ", ".join(context.load_roles())
 
 
 @context.check_permission("view", "article", message="can not view")
@@ -38,6 +38,7 @@ def article_page():
     return "<view>"
 
 
+# use it as `decorator`
 @context.check_permission("edit", "article", message="can not edit")
 def edit_article_page():
     return "<edit>"
@@ -52,6 +53,13 @@ except PermissionDenied as exception:
     print "You could not edit the article page,",
     print "the exception said: '%s'." % exception.kwargs['message']
 
+try:
+    # use it as `with statement`
+    with context.check_permission("edit", "article"):
+        pass
+except PermissionDenied:
+    print "Maybe it's because you are not a editor."
+
 
 # --------------
 # to be a editor
@@ -61,7 +69,7 @@ except PermissionDenied as exception:
 def second_load_roles():
     yield "editor"
 
-print "Now you are %s." % ", ".join(context.load_roles())
+print "* Now you are %s." % ", ".join(context.load_roles())
 
 if edit_article_page() == "<edit>":
     print "You could edit the article page."
@@ -75,10 +83,20 @@ if edit_article_page() == "<edit>":
 def third_load_roles():
     yield "bad man"
 
-print "Now you are %s." % ", ".join(context.load_roles())
+print "* Now you are %s." % ", ".join(context.load_roles())
 
 try:
     article_page()
 except PermissionDenied as exception:
     print "You could not view the article page,",
     print "the exception said: '%s'." % exception.kwargs['message']
+
+# use it as `nonzero`
+if not context.check_permission("view", "article"):
+    print "Oh! A bad man could not view the article page."
+
+# use it as `check function`
+try:
+    context.check_permission("edit", "article").check()
+except PermissionDenied as exception:
+    print "Yes, of course, a bad man could not edit the article page too."
