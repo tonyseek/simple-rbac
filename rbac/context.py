@@ -4,17 +4,34 @@
 import functools
 
 
-class PermissionChecker(object):
-    """A decorator to check the permission."""
+class PermissionContext(object):
+    """A context of decorator to check the permission."""
 
-    def __init__(self, checker, callback):
-        self.checker = checker
-        self.callback = callback
-        functools.update_wrapper(self, callback)
+    def __init__(self, checker):
+        self.check = checker
+        self.in_context = False
 
-    def __call__(self, *args, **kwargs):
-        self.checker()
-        return self.callback(*args, **kwargs)
+    def __call__(self, wrapped):
+        def wrapper(*args, **kwargs):
+            with self:
+                return wrapped(*args, **kwargs)
+        return functools.update_wrapper(wrapper, wrapped)
+
+    def __enter__(self):
+        self.in_context = True
+        self.check()
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        self.in_context = False
+
+    def __nonzero__(self):
+        try:
+            self.check()
+        except PermissionDenied:
+            return False
+        else:
+            return True
 
 
 class IdentityContext(object):
@@ -45,12 +62,13 @@ class IdentityContext(object):
         """
         checker = functools.partial(self._docheck, operation=operation,
                                     resource=resource, **exception_kwargs)
-        return functools.partial(PermissionChecker, checker)
+        return PermissionContext(checker)
 
     def _docheck(self, operation, resource, **exception_kwargs):
         roles = self.load_roles()
         if not self.acl.is_any_allowed(roles, operation, resource):
             raise PermissionDenied(**exception_kwargs)
+        return True
 
 
 class PermissionDenied(Exception):
