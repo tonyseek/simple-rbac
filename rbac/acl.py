@@ -14,20 +14,22 @@ class Registry(object):
         self._denied = {}
 
     def add_role(self, role, parents=[]):
-        """Add a role.
+        """Add a role or append parents roles to a special role.
 
         All added roles should be hashable.
         (http://docs.python.org/glossary.html#term-hashable)
         """
-        self._roles[role] = frozenset(parents)
+        self._roles.setdefault(role, set())
+        self._roles[role].update(parents)
 
     def add_resource(self, resource, parents=[]):
-        """Add a resource.
+        """Add a resource or append parents resources to a special resource.
 
         All added resources should be hashable.
         (http://docs.python.org/glossary.html#term-hashable)
         """
-        self._resources[resource] = frozenset(parents)
+        self._resources.setdefault(resource, set())
+        self._resources[resource].update(parents)
 
     def allow(self, role, operation, resource, assertion=None):
         """Add a allowed rule.
