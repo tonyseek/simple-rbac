@@ -5,6 +5,9 @@ import functools
 import collections
 
 
+__all__ = ["dummy_factory", "model_role_factory", "model_resource_factory",
+           "RegistryProxy"]
+
 # identity tuple
 identity = collections.namedtuple("identity", ["type", "cls", "id"])
 role_identity = functools.partial(identity, "role-model")
@@ -15,35 +18,32 @@ getfullname = lambda m: "%s.%s" % (m.__module__, m.__name__)
 dummy_factory = lambda acl, obj: obj
 
 
-def model_role_factory(acl, obj):
-    """A factory to create a identity tuple from a model class or instance."""
+def _model_identity_factory(obj, identity_maker, identity_adder):
     if isinstance(obj, type):
         # make a identity tuple for the "class"
-        identity = role_identity(getfullname(obj), None)
+        identity = identity_maker(getfullname(obj), None)
         # register into access control list
-        acl.add_role(identity)
-    else:
+        identity_adder(identity)
+    elif hasattr(obj, "id"):
         # make a identity tuple for the "instance" and the "class"
         class_fullname = getfullname(obj.__class__)
-        identity = role_identity(class_fullname, obj.id)
-        identity_type = role_identity(class_fullname, None)
+        identity = identity_maker(class_fullname, obj.id)
+        identity_type = identity_maker(class_fullname, None)
         # register into access control list
-        acl.add_role(identity, parents=[identity_type])
+        identity_adder(identity, parents=[identity_type])
+    else:
+        identity = obj
     return identity
+
+
+def model_role_factory(acl, obj):
+    """A factory to create a identity tuple from a model class or instance."""
+    return _model_identity_factory(obj, role_identity, acl.add_role)
 
 
 def model_resource_factory(acl, obj):
     """A factory to create a identity tuple from a model class or instance."""
-    # yes, you're right, this is a copy-and-paste programming.
-    if isinstance(obj, type):
-        identity = resource_identity(getfullname(obj), None)
-        acl.add_resource(identity)
-    else:
-        class_fullname = getfullname(obj.__class__)
-        identity = resource_identity(class_fullname, obj.id)
-        identity_type = resource_identity(class_fullname, None)
-        acl.add_resource(identity, parents=[identity_type])
-    return identity
+    return _model_identity_factory(obj, resource_identity, acl.add_resource)
 
 
 class RegistryProxy(object):

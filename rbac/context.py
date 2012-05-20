@@ -4,6 +4,9 @@
 import functools
 
 
+__all__ = ["IdentityContext", "PermissionDenied"]
+
+
 class PermissionContext(object):
     """A context of decorator to check the permission."""
 
@@ -67,7 +70,8 @@ class IdentityContext(object):
     def _docheck(self, operation, resource, **exception_kwargs):
         roles = self.load_roles()
         if not self.acl.is_any_allowed(roles, operation, resource):
-            raise PermissionDenied(**exception_kwargs)
+            exception = exception_kwargs.pop("exception", PermissionDenied)
+            raise exception(**exception_kwargs)
         return True
 
 

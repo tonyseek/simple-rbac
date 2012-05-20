@@ -6,12 +6,14 @@ import unittest
 import rbac.acl
 
 
-class RBACAclTestCase(unittest.TestCase):
+class AclTestCase(unittest.TestCase):
     """The test case of rbac.acl module."""
+
+    registry_class = rbac.acl.Registry
 
     def setUp(self):
         # create acl registry
-        self.acl = rbac.acl.Registry()
+        self.acl = self.registry_class()
 
         # add roles
         self.acl.add_role("user")

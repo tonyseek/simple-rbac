@@ -6,6 +6,8 @@ import unittest
 import rbac.acl
 import rbac.proxy
 
+import testacl
+
 
 # -----------
 # Mock Models
@@ -139,3 +141,9 @@ class ProxyTestCase(unittest.TestCase):
         self.assertFalse(self.proxy.is_allowed(staff, "edit", post))
         data['current_user'] = "tony"
         self.assertTrue(self.proxy.is_allowed(staff, "edit", post))
+
+
+class CompatibilityTestCase(testacl.AclTestCase):
+    """Assert the proxy is compatibility with plain acl registry."""
+
+    registry_acl = lambda: rbac.proxy.RegistryProxy(rbac.acl.Registry())

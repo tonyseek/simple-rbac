@@ -4,6 +4,9 @@
 import itertools
 
 
+__all__ = ["Registry"]
+
+
 class Registry(object):
     """The registry of access control list."""
 
