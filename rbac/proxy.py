@@ -19,20 +19,22 @@ dummy_factory = lambda acl, obj: obj
 
 
 def _model_identity_factory(obj, identity_maker, identity_adder):
+    if not hasattr(obj, "id"):
+        return obj
+
     if isinstance(obj, type):
         # make a identity tuple for the "class"
         identity = identity_maker(getfullname(obj), None)
         # register into access control list
         identity_adder(identity)
-    elif hasattr(obj, "id"):
+    else:
         # make a identity tuple for the "instance" and the "class"
         class_fullname = getfullname(obj.__class__)
         identity = identity_maker(class_fullname, obj.id)
         identity_type = identity_maker(class_fullname, None)
         # register into access control list
         identity_adder(identity, parents=[identity_type])
-    else:
-        identity = obj
+
     return identity
 
 
@@ -87,6 +89,11 @@ class RegistryProxy(object):
 
     def is_allowed(self, role, operation, resource):
         role = self.make_role(role)
+        resource = self.make_resource(resource)
+        return self.acl.is_allowed(role, operation, resource)
+
+    def is_any_allowed(self, roles, operation, resource):
+        roles = [self.make_role(role) for role in roles]
         resource = self.make_resource(resource)
         return self.acl.is_allowed(role, operation, resource)
 
