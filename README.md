@@ -96,5 +96,96 @@ class Resource(db.Model):
         return self.id == other.id
 ```
 
+Of course, You could use the built-in hashable types too, such as tuple,
+namedtuple, frozenset and more.
 
-[0]: "http://docs.python.org/glossary.html#term-hashable", "Hashable"
+
+Use the Identity Context Check Your Permission
+----------------------------------------------
+
+Obviously, the work of checking permission is a cross-cutting concern.
+The module named `rbac.context`, our `IdentityContext`, provide some ways to
+make our work neater.
+
+### 1. Create the Context Manager
+
+```python
+acl = Registry()
+context = IdentityContext(acl)
+```
+
+### 2. Set a Loader
+
+The loader should load the roles of current user.
+
+```python
+from myapp import get_current_user
+
+@context.set_roles_loader
+def second_load_roles():
+    user = get_current_user()
+    yield "everyone"
+    for role in user.roles:
+        yield str(role)
+```
+
+### 3. Protect Your Action
+
+Now you could protect your action from unauthorized access. As you please, you
+could choose many ways to check the permission, including python `decorator`,
+python `with statement` or simple method calling.
+
+#### Decorator
+
+```python
+@context.check_permission("view", "article", message="can't view")
+def article_page():
+    return "your-article"
+```
+
+#### With Statement
+
+```python
+def article_page():
+    with context.check_permission("view", "article", message="can't view"):
+        return "your-article"
+```
+
+#### Simple Method Calling
+
+```python
+def article_page():
+    context.check_permission("view", "article", message="can't view").check()
+    return "your-article"
+```
+
+#### Exception Handler and Non-Zero Checking
+
+Whatever which way you choosen, a exception `rbac.context.PermissionDenied`
+will be raised while a unauthorized access happening. The keyword arguments
+sent to the `context.check_permission` will be set into a attirbute named
+`kwargs` of the exception. You could get those data in your exception handler.
+
+```python
+@context.check_permission("view", "article", message="can not view")
+def article_page():
+    return "your-article"
+
+try:
+    print article_page()
+except PermissionDenied as exception:
+    print "The access has been denied, you %s" % exception.kwargs['message']
+```
+
+If you don't want to raise the exception but only check the access is allowed
+or not, you could use the checking like a boolean value.
+
+```python
+if not context.check_permission("view", "article"):
+    print "Oh! the access has been denied."
+
+is_allowed = bool(context.check_permission("view", "article"))
+```
+
+
+[0]: http://docs.python.org/glossary.html#term-hashable "Hashable"
