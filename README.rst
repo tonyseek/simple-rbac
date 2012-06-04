@@ -11,7 +11,7 @@ Quick Start
 
 ::
 
-    pip install git+git://github.com/tonyseek/simple-rbac.git
+    pip install simple-rbac
 
 2. Create a Access Control List
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

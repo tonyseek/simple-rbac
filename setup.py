@@ -4,7 +4,7 @@
 from setuptools import setup
 
 
-long_description = open("./README.rst", "r").read().decode("utf-8")
+long_description = open("README.rst", "r").read().decode("utf-8")
 
 classifiers = [
             "Programming Language :: Python",
@@ -31,7 +31,6 @@ metadata = {'name': "simple-rbac",
             'platforms': "any",
             'test_suite': "tests.run_tests",
             'classifiers': classifiers}
-
 
 if __name__ == "__main__":
     setup(**metadata)
