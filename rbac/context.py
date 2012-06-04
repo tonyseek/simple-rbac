@@ -10,9 +10,11 @@ __all__ = ["IdentityContext", "PermissionDenied"]
 class PermissionContext(object):
     """A context of decorator to check the permission."""
 
-    def __init__(self, checker):
-        self.check = checker
+    def __init__(self, checker, exception=None, **exception_kwargs):
+        self._check = checker
         self.in_context = False
+        self.exception = exception or PermissionDenied
+        self.exception_kwargs = exception_kwargs
 
     def __call__(self, wrapped):
         def wrapper(*args, **kwargs):
@@ -29,12 +31,12 @@ class PermissionContext(object):
         self.in_context = False
 
     def __nonzero__(self):
-        try:
-            self.check()
-        except PermissionDenied:
-            return False
-        else:
-            return True
+        return bool(self._check())
+
+    def check(self):
+        if not self._check():
+            raise self.exception(**self.exception_kwargs)
+        return True
 
 
 class IdentityContext(object):
@@ -58,21 +60,33 @@ class IdentityContext(object):
         self.load_roles = role_loader
 
     def check_permission(self, operation, resource, **exception_kwargs):
-        """A decorator to check the permission.
+        """A context to check the permission.
 
         The keyword arguments would be stored into the attribute `kwargs` of
         the exception `PermissionDenied`.
-        """
-        checker = functools.partial(self._docheck, operation=operation,
-                                    resource=resource, **exception_kwargs)
-        return PermissionContext(checker)
 
-    def _docheck(self, operation, resource, **exception_kwargs):
-        roles = self.load_roles()
-        if not self.acl.is_any_allowed(roles, operation, resource):
-            exception = exception_kwargs.pop("exception", PermissionDenied)
-            raise exception(**exception_kwargs)
-        return True
+        If the key named `exception` is existed in the `kwargs`, it will be
+        used instead of the `PermissionDenied`.
+
+        The return value of this method could be use as a decorator, a with
+        context enviroment or a boolean-like value.
+        """
+        exception = exception_kwargs.pop("exception", PermissionDenied)
+        checker = functools.partial(self._docheck, operation=operation,
+                                    resource=resource)
+        return PermissionContext(checker, exception, **exception_kwargs)
+
+    def has_permission(self, *args, **kwargs):
+        return bool(self.check_permission(*args, **kwargs))
+
+    def has_roles(self, role_groups):
+        had_roles = frozenset(self.load_roles())
+        return any(all(role in had_roles for role in role_group)
+                   for role_group in role_groups)
+
+    def _docheck(self, operation, resource):
+        had_roles = frozenset(self.load_roles())
+        return self.acl.is_any_allowed(had_roles, operation, resource)
 
 
 class PermissionDenied(Exception):

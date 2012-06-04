@@ -86,12 +86,12 @@ class Registry(object):
 
     def is_any_allowed(self, roles, operation, resource):
         """Check the permission with many roles."""
-        is_allowed = None
+        is_allowed = None  # there is not matching rules
         for role in roles:
-            is_allowed = self.is_allowed(role, operation, resource)
-            if is_allowed is False:
-                return False
-            elif is_allowed is True:
+            is_current_allowed = self.is_allowed(role, operation, resource)
+            if is_current_allowed is False:
+                return False  # denied by rule
+            elif is_current_allowed is True:
                 is_allowed = True
         return is_allowed
 

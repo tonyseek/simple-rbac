@@ -141,3 +141,6 @@ class AclTestCase(unittest.TestCase):
         self.assertTrue(self.acl.is_allowed("writer", "edit", "news"))
         self.assertTrue(self.acl.is_allowed("editor", "edit", "news"))
         self.assertTrue(self.acl.is_allowed("manager", "edit", "news"))
+
+    def test_is_any_allowed(self):
+        pass  # TODO: create a test
