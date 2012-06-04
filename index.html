@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Simple RBAC by tonyseek</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Simple RBAC</h1>
+        <h2>A simple role based access control utility for Python.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/tonyseek/simple-rbac/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/tonyseek/simple-rbac/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/tonyseek/simple-rbac" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h2>Quick Start</h2>
+
+<h3>1. Install Simple RBAC</h3>
+
+<div class="highlight">
+<pre>easy_install simple-rbac
+</pre>
+</div>
+
+
+<p>or</p>
+
+<div class="highlight">
+<pre>pip install simple-rbac
+</pre>
+</div>
+
+
+<h3>2. Create a Access Control List</h3>
+
+<div class="highlight">
+<pre><span class="kn">import</span> <span class="nn">rbac.acl</span>
+
+<span class="n">acl</span> <span class="o">=</span> <span class="n">rbac</span><span class="o">.</span><span class="n">acl</span><span class="o">.</span><span class="n">Registry</span><span class="p">()</span>
+</pre>
+</div>
+
+
+<h3>3. Register Roles and Resources</h3>
+
+<div class="highlight">
+<pre><span class="n">acl</span><span class="o">.</span><span class="n">add_role</span><span class="p">(</span><span class="s">"member"</span><span class="p">)</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">add_role</span><span class="p">(</span><span class="s">"student"</span><span class="p">,</span> <span class="p">[</span><span class="s">"member"</span><span class="p">])</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">add_role</span><span class="p">(</span><span class="s">"teacher"</span><span class="p">,</span> <span class="p">[</span><span class="s">"member"</span><span class="p">])</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">add_role</span><span class="p">(</span><span class="s">"junior-student"</span><span class="p">,</span> <span class="p">[</span><span class="s">"student"</span><span class="p">])</span>
+
+<span class="n">acl</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="s">"course"</span><span class="p">)</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="s">"senior-course"</span><span class="p">,</span> <span class="p">[</span><span class="s">"course"</span><span class="p">])</span>
+</pre>
+</div>
+
+
+<h3>4. Add Rules</h3>
+
+<div class="highlight">
+<pre><span class="n">acl</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s">"member"</span><span class="p">,</span> <span class="s">"view"</span><span class="p">,</span> <span class="s">"course"</span><span class="p">)</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s">"student"</span><span class="p">,</span> <span class="s">"learn"</span><span class="p">,</span> <span class="s">"course"</span><span class="p">)</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s">"teacher"</span><span class="p">,</span> <span class="s">"teach"</span><span class="p">,</span> <span class="s">"course"</span><span class="p">)</span>
+<span class="n">acl</span><span class="o">.</span><span class="n">deny</span><span class="p">(</span><span class="s">"junior-student"</span><span class="p">,</span> <span class="s">"learn"</span><span class="p">,</span> <span class="s">"senior-course"</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>5. Use It to Check Permission</h3>
+
+<div class="highlight">
+<pre><span class="k">if</span> <span class="n">acl</span><span class="o">.</span><span class="n">is_allowed</span><span class="p">(</span><span class="s">"student"</span><span class="p">,</span> <span class="s">"view"</span><span class="p">,</span> <span class="s">"course"</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Students chould view courses."</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Students chould not view courses."</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">acl</span><span class="o">.</span><span class="n">is_allowed</span><span class="p">(</span><span class="s">"junior-student"</span><span class="p">,</span> <span class="s">"learn"</span><span class="p">,</span> <span class="s">"senior-course"</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Junior students chould learn senior courses."</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Junior students chould not learn senior courses."</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h2>Custom Role and Resource Class</h2>
+
+<p>It's not necessary to use string as role object and resource object like
+"Quick Start". You could define role class and resource class of yourself,
+such as a database mapped model in SQLAlchemy.</p>
+
+<p>Whatever which role class and resource class you will use, it must implement
+<code>__hash__</code> method and <code>__eq__</code> method to be <a href="http://docs.python.org/glossary.html#term-hashable" title="Hashable">hashable</a>.</p>
+
+<h3>Example</h3>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Role</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">"""The role."""</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">screen_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Unicode</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="s">"ROLE::</span><span class="si">%d</span><span class="s">"</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span>
+
+
+<span class="k">class</span> <span class="nc">Resource</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">"""The resource."""</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">screen_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Unicode</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="s">"RESOURCE::</span><span class="si">%d</span><span class="s">"</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">id</span>
+</pre>
+</div>
+
+
+<p>Of course, You could use the built-in hashable types too, such as tuple,
+namedtuple, frozenset and more.</p>
+
+<h2>Use the Identity Context Check Your Permission</h2>
+
+<p>Obviously, the work of checking permission is a cross-cutting concern.
+The module named <code>rbac.context</code>, our <code>IdentityContext</code>, provide some ways to
+make our work neater.</p>
+
+<h3>1. Create the Context Manager</h3>
+
+<div class="highlight">
+<pre><span class="n">acl</span> <span class="o">=</span> <span class="n">Registry</span><span class="p">()</span>
+<span class="n">context</span> <span class="o">=</span> <span class="n">IdentityContext</span><span class="p">(</span><span class="n">acl</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>2. Set a Loader</h3>
+
+<p>The loader should load the roles of current user.</p>
+
+<div class="highlight">
+<pre><span class="kn">from</span> <span class="nn">myapp</span> <span class="kn">import</span> <span class="n">get_current_user</span>
+
+<span class="nd">@context.set_roles_loader</span>
+<span class="k">def</span> <span class="nf">second_load_roles</span><span class="p">():</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_current_user</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="s">"everyone"</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">roles</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">role</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>3. Protect Your Action</h3>
+
+<p>Now you could protect your action from unauthorized access. As you please, you
+could choose many ways to check the permission, including python <code>decorator</code>,
+python <code>with statement</code> or simple method calling.</p>
+
+<h4>Decorator</h4>
+
+<div class="highlight">
+<pre><span class="nd">@context.check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">"can't view"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">article_page</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s">"your-article"</span>
+</pre>
+</div>
+
+
+<h4>With Statement</h4>
+
+<div class="highlight">
+<pre><span class="k">def</span> <span class="nf">article_page</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">context</span><span class="o">.</span><span class="n">check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">"can't view"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">"your-article"</span>
+</pre>
+</div>
+
+
+<h4>Simple Method Calling</h4>
+
+<div class="highlight">
+<pre><span class="k">def</span> <span class="nf">article_page</span><span class="p">():</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">"can't view"</span><span class="p">)</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s">"your-article"</span>
+</pre>
+</div>
+
+
+<h4>Exception Handler and Non-Zero Checking</h4>
+
+<p>Whatever which way you choosen, a exception <code>rbac.context.PermissionDenied</code>
+will be raised while a unauthorized access happening. The keyword arguments
+sent to the <code>context.check_permission</code> will be set into a attirbute named
+<code>kwargs</code> of the exception. You could get those data in your exception handler.</p>
+
+<div class="highlight">
+<pre><span class="nd">@context.check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">"can not view"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">article_page</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s">"your-article"</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">article_page</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">PermissionDenied</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">"The access has been denied, you </span><span class="si">%s</span><span class="s">"</span> <span class="o">%</span> <span class="n">exception</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">'message'</span><span class="p">]</span>
+</pre>
+</div>
+
+
+<p>If you don't want to raise the exception but only check the access is allowed
+or not, you could use the checking like a boolean value.</p>
+
+<div class="highlight">
+<pre><span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">"Oh! the access has been denied."</span>
+
+<span class="n">is_allowed</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">check_permission</span><span class="p">(</span><span class="s">"view"</span><span class="p">,</span> <span class="s">"article"</span><span class="p">))</span>
+</pre>
+</div>
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>
