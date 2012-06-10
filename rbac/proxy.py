@@ -95,7 +95,7 @@ class RegistryProxy(object):
     def is_any_allowed(self, roles, operation, resource):
         roles = [self.make_role(role) for role in roles]
         resource = self.make_resource(resource)
-        return self.acl.is_allowed(role, operation, resource)
+        return self.acl.is_any_allowed(roles, operation, resource)
 
     def __getattr__(self, attr):
         return getattr(self.acl, attr)

@@ -142,6 +142,30 @@ class ProxyTestCase(unittest.TestCase):
         data['current_user'] = "tony"
         self.assertTrue(self.proxy.is_allowed(staff, "edit", post))
 
+    def test_is_any_allowed(self):
+        self.proxy.add_role(Role("nobody"))
+
+        no_allowed = ["staff", "nobody"]
+        no_allowed_one = ["staff"]
+
+        one_allowed = ["staff", "editor", "nobody"]
+        one_allowed_only = ["editor"]
+
+        one_denied = ["staff", "nobody", "manager"]
+        one_denied_with_allowed = ["staff", "editor", "manager"]
+
+        test_result = lambda roles: self.proxy.is_any_allowed(
+                (Role.query(r) for r in roles), "edit", Post)
+
+        for roles in (no_allowed, no_allowed_one):
+            self.assertIsNone(test_result(roles))
+
+        for roles in (one_allowed, one_allowed_only):
+            self.assertTrue(test_result(roles))
+
+        for roles in (one_denied, one_denied_with_allowed):
+            self.assertFalse(test_result(roles))
+
 
 class CompatibilityTestCase(testacl.AclTestCase):
     """Assert the proxy is compatibility with plain acl registry."""

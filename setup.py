@@ -18,7 +18,7 @@ classifiers = [
             "Topic :: Software Development :: Libraries :: Python Modules"]
 
 metadata = {'name': "simple-rbac",
-            'version': "0.1",
+            'version': "0.1.1",
             'description': "A simple role based access control utility",
             'long_description': long_description,
             'keywords': "rbac permission acl access-control",
