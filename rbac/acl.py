@@ -2,6 +2,7 @@
 #-*- coding:utf-8 -*-
 
 import itertools
+import functools
 
 
 __all__ = ["Registry"]
@@ -42,7 +43,10 @@ class Registry(object):
         """
         assert not role or role in self._roles
         assert not resource or resource in self._resources
-        self._allowed[role, operation, resource] = assertion
+        rule_key = (role, operation, resource)
+        self._allowed[rule_key] = assertion
+        #: return a decorator to reset assertion
+        return functools.partial(self._allowed.__setitem__, rule_key)
 
     def deny(self, role, operation, resource, assertion=None):
         """Add a denied rule.
@@ -52,7 +56,10 @@ class Registry(object):
         """
         assert not role or role in self._roles
         assert not resource or resource in self._resources
-        self._denied[role, operation, resource] = assertion
+        rule_key = (role, operation, resource)
+        self._denied[rule_key] = assertion
+        #: return a decorator to reset assertion
+        return functools.partial(self._denied.__setitem__, rule_key)
 
     def is_allowed(self, role, operation, resource):
         """Check the permission.
@@ -87,7 +94,7 @@ class Registry(object):
     def is_any_allowed(self, roles, operation, resource):
         """Check the permission with many roles."""
         is_allowed = None  # there is not matching rules
-        for role in roles:
+        for role in frozenset(roles):
             is_current_allowed = self.is_allowed(role, operation, resource)
             if is_current_allowed is False:
                 return False  # denied by rule
@@ -96,11 +103,17 @@ class Registry(object):
         return is_allowed
 
 
-def get_family(all_parents, current):
+def get_family(parents, current):
     """Iterate current object and its all parents recursively."""
+    #: itself
     yield current
-    for parent in get_parents(all_parents, current):
+    #: if parents is dynamic, call the factory now
+    if callable(parents):
+        parents = parents()
+    #: iterate parents recursively
+    for parent in get_parents(parents, current):
         yield parent
+    #: None means any
     yield None
 
 
