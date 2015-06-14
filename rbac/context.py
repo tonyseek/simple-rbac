@@ -85,8 +85,10 @@ class IdentityContext(object):
                    for role_group in role_groups)
 
     def _docheck(self, operation, resource):
-        had_roles = frozenset(self.load_roles())
-        return self.acl.is_any_allowed(had_roles, operation, resource)
+        had_roles = self.load_roles()
+        role_list = list(had_roles)
+        assert len(role_list) == len(set(role_list))  # duplicate role check
+        return self.acl.is_any_allowed(role_list, operation, resource)
 
 
 class PermissionDenied(Exception):
