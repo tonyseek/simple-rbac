@@ -57,15 +57,15 @@ class ContextTestCase(unittest.TestCase):
         check_view = self.context.check_permission("view", "article")
         check_edit = self.context.check_permission("edit", "article")
 
-        for i in self._to_be_staff():
+        for _ in self._to_be_staff():
             self.assertTrue(bool(check_view))
             self.assertFalse(bool(check_edit))
 
-        for i in self._to_be_editor():
+        for _ in self._to_be_editor():
             self.assertTrue(bool(check_view))
             self.assertTrue(bool(check_edit))
 
-        for i in self._to_be_badguy():
+        for _ in self._to_be_badguy():
             self.assertFalse(bool(check_view))
             self.assertFalse(bool(check_edit))
 
@@ -74,15 +74,15 @@ class ContextTestCase(unittest.TestCase):
     # -------------------
 
     def _assert_call(self, view_article, edit_article):
-        for i in self._to_be_staff():
+        for _ in self._to_be_staff():
             self.assertTrue(view_article())
             self.assertRaises(self.denied_error, edit_article)
 
-        for i in self._to_be_editor():
+        for _ in self._to_be_editor():
             self.assertTrue(view_article())
             self.assertTrue(edit_article())
 
-        for i in self._to_be_badguy():
+        for _ in self._to_be_badguy():
             self.assertRaises(self.denied_error, view_article)
             self.assertRaises(self.denied_error, edit_article)
 
