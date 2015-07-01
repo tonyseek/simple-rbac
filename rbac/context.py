@@ -59,7 +59,7 @@ class IdentityContext(object):
         """
         self.load_roles = role_loader
 
-    def check_permission(self, operation, resource, **exception_kwargs):
+    def check_permission(self, operation, resource, assertion_kwargs=None, **exception_kwargs):
         """A context to check the permission.
 
         The keyword arguments would be stored into the attribute `kwargs` of
@@ -73,7 +73,7 @@ class IdentityContext(object):
         """
         exception = exception_kwargs.pop("exception", PermissionDenied)
         checker = functools.partial(self._docheck, operation=operation,
-                                    resource=resource)
+                                    resource=resource, **assertion_kwargs or {})
         return PermissionContext(checker, exception, **exception_kwargs)
 
     def has_permission(self, *args, **kwargs):
@@ -84,11 +84,11 @@ class IdentityContext(object):
         return any(all(role in had_roles for role in role_group)
                    for role_group in role_groups)
 
-    def _docheck(self, operation, resource):
+    def _docheck(self, operation, resource, **assertion_kwargs):
         had_roles = self.load_roles()
         role_list = list(had_roles)
         assert len(role_list) == len(set(role_list))  # duplicate role check
-        return self.acl.is_any_allowed(role_list, operation, resource)
+        return self.acl.is_any_allowed(role_list, operation, resource, **assertion_kwargs)
 
 
 class PermissionDenied(Exception):

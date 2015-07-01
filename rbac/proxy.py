@@ -87,15 +87,15 @@ class RegistryProxy(object):
         resource = self.make_resource(resource)
         return self.acl.deny(role, operation, resource, assertion)
 
-    def is_allowed(self, role, operation, resource):
+    def is_allowed(self, role, operation, resource, **assertion_kwargs):
         role = self.make_role(role)
         resource = self.make_resource(resource)
-        return self.acl.is_allowed(role, operation, resource)
+        return self.acl.is_allowed(role, operation, resource, **assertion_kwargs)
 
-    def is_any_allowed(self, roles, operation, resource):
+    def is_any_allowed(self, roles, operation, resource, **assertion_kwargs):
         roles = [self.make_role(role) for role in roles]
         resource = self.make_resource(resource)
-        return self.acl.is_any_allowed(roles, operation, resource)
+        return self.acl.is_any_allowed(roles, operation, resource, **assertion_kwargs)
 
     def __getattr__(self, attr):
         return getattr(self.acl, attr)
