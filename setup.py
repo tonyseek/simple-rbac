@@ -4,7 +4,7 @@
 from setuptools import setup
 
 
-long_description = open("README.rst", "r").read().decode("utf-8")
+long_description = open("README.rst", "r").read()
 
 classifiers = [
             "Programming Language :: Python",
