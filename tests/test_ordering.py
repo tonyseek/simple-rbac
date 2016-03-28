@@ -8,15 +8,15 @@ import rbac.context
 
 
 class _FunctionProxy(object):
-        def __init__(self, fn, evaluated_roles, role_idx=0):
-            self.fn = fn
-            self.role_idx = role_idx
-            self.evaluated_roles = evaluated_roles
+    def __init__(self, fn, evaluated_roles, role_idx=0):
+        self.fn = fn
+        self.role_idx = role_idx
+        self.evaluated_roles = evaluated_roles
 
-        def __call__(self, *args, **kwargs):
-            role = args[self.role_idx]
-            self.evaluated_roles.append(role)
-            return self.fn.__call__(*args, **kwargs)
+    def __call__(self, *args, **kwargs):
+        role = args[self.role_idx]
+        self.evaluated_roles.append(role)
+        return self.fn.__call__(*args, **kwargs)
 
 
 class OrderingTestCase(unittest.TestCase):
