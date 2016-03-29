@@ -15,6 +15,8 @@ class Registry(object):
         self._resources = {}
         self._allowed = {}
         self._denied = {}
+        self._denial_only_roles = set()  # to allow additional short circuiting, track roles that only ever deny access
+        self._children = {}
 
     def add_role(self, role, parents=[]):
         """Add a role or append parents roles to a special role.
@@ -24,6 +26,13 @@ class Registry(object):
         """
         self._roles.setdefault(role, set())
         self._roles[role].update(parents)
+        for p in parents:
+            self._children.setdefault(p, set())
+            self._children[p].add(role)
+
+        # all roles start as deny-only (unless one of its parents isn't deny-only)
+        if not parents or self._roles_are_deny_only(parents):
+            self._denial_only_roles.add(role)
 
     def add_resource(self, resource, parents=[]):
         """Add a resource or append parents resources to a special resource.
@@ -44,6 +53,10 @@ class Registry(object):
         assert not resource or resource in self._resources
         self._allowed[role, operation, resource] = assertion
 
+        # since we just allowed a permission, role and any children aren't denied-only
+        for r in itertools.chain([role], get_family(self._children, role)):
+            self._denial_only_roles.discard(r)
+
     def deny(self, role, operation, resource, assertion=None):
         """Add a denied rule.
 
@@ -54,7 +67,7 @@ class Registry(object):
         assert not resource or resource in self._resources
         self._denied[role, operation, resource] = assertion
 
-    def is_allowed(self, role, operation, resource):
+    def is_allowed(self, role, operation, resource, check_allowed=True, **assertion_kwargs):
         """Check the permission.
 
         If the access is denied, this method will return False; if the access
@@ -65,35 +78,44 @@ class Registry(object):
         assert not resource or resource in self._resources
 
         roles = set(get_family(self._roles, role))
-        operations = set([None, operation])
+        operations = {None, operation}
         resources = set(get_family(self._resources, resource))
 
         is_allowed = None
-        default_assertion = lambda *args: True
+        default_assertion = lambda *args, **kwargs: True
 
         for permission in itertools.product(roles, operations, resources):
             if permission in self._denied:
                 assertion = self._denied[permission] or default_assertion
-                if assertion(self, role, operation, resource):
+                if assertion(self, role, operation, resource, **assertion_kwargs):
                     return False  # denied by rule immediately
 
-            if permission in self._allowed:
+            if check_allowed and permission in self._allowed:
                 assertion = self._allowed[permission] or default_assertion
-                if assertion(self, role, operation, resource):
+                if assertion(self, role, operation, resource, **assertion_kwargs):
                     is_allowed = True  # allowed by rule
 
         return is_allowed
 
-    def is_any_allowed(self, roles, operation, resource):
+    def is_any_allowed(self, roles, operation, resource, **assertion_kwargs):
         """Check the permission with many roles."""
-        is_allowed = None  # there is not matching rules
-        for role in roles:
-            is_current_allowed = self.is_allowed(role, operation, resource)
+        is_allowed = None  # no matching rules
+        for i, role in enumerate(roles):
+            # if access not yet allowed and all remaining roles could only deny access, short-circuit and return False
+            if not is_allowed and self._roles_are_deny_only(roles[i:]):
+                return False
+
+            check_allowed = not is_allowed  # if another role gave access, don't bother checking if this one is allowed
+            is_current_allowed = self.is_allowed(
+                role, operation, resource, check_allowed=check_allowed, **assertion_kwargs)
             if is_current_allowed is False:
                 return False  # denied by rule
             elif is_current_allowed is True:
                 is_allowed = True
         return is_allowed
+
+    def _roles_are_deny_only(self, roles):
+        return all(r in self._denial_only_roles for r in roles)
 
 
 def get_family(all_parents, current):

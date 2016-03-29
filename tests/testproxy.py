@@ -155,10 +155,10 @@ class ProxyTestCase(unittest.TestCase):
         one_denied_with_allowed = ["staff", "editor", "manager"]
 
         test_result = lambda roles: self.proxy.is_any_allowed(
-                (Role.query(r) for r in roles), "edit", Post)
+            (Role.query(r) for r in roles), "edit", Post)
 
         for roles in (no_allowed, no_allowed_one):
-            self.assertIsNone(test_result(roles))
+            self.assertFalse(test_result(roles))
 
         for roles in (one_allowed, one_allowed_only):
             self.assertTrue(test_result(roles))
