@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 import functools
 import collections
@@ -13,9 +13,18 @@ identity = collections.namedtuple("identity", ["type", "cls", "id"])
 role_identity = functools.partial(identity, "role-model")
 resource_identity = functools.partial(identity, "resource-model")
 
+
+def GetFullName(m):
+    return "%s.%s" % (m.__module__, m.__name__)
+
+
+def DummyFactory(acl, obj):
+    return obj
+
+
 # inline functions
-getfullname = lambda m: "%s.%s" % (m.__module__, m.__name__)
-dummy_factory = lambda acl, obj: obj
+getfullname = GetFullName
+dummy_factory = DummyFactory
 
 
 def _model_identity_factory(obj, identity_maker, identity_adder):
@@ -62,7 +71,7 @@ class RegistryProxy(object):
     """
 
     def __init__(self, acl, role_factory=dummy_factory,
-            resource_factory=model_resource_factory):
+                 resource_factory=model_resource_factory):
         self.acl = acl
         self.make_role = functools.partial(role_factory, self.acl)
         self.make_resource = functools.partial(resource_factory, self.acl)
@@ -90,12 +99,14 @@ class RegistryProxy(object):
     def is_allowed(self, role, operation, resource, **assertion_kwargs):
         role = self.make_role(role)
         resource = self.make_resource(resource)
-        return self.acl.is_allowed(role, operation, resource, **assertion_kwargs)
+        return self.acl.is_allowed(role, operation,
+                                   resource, **assertion_kwargs)
 
     def is_any_allowed(self, roles, operation, resource, **assertion_kwargs):
         roles = [self.make_role(role) for role in roles]
         resource = self.make_resource(resource)
-        return self.acl.is_any_allowed(roles, operation, resource, **assertion_kwargs)
+        return self.acl.is_any_allowed(roles, operation,
+                                       resource, **assertion_kwargs)
 
     def __getattr__(self, attr):
         return getattr(self.acl, attr)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 import unittest
 
@@ -57,7 +57,7 @@ class AclTestCase(unittest.TestCase):
             self.assertTrue(self.acl.is_allowed("super", "view", resource))
             self.assertTrue(self.acl.is_allowed("super", "new", resource))
             self.assertTrue(self.acl.is_any_allowed(["user", "super"],
-                "view", resource))
+                                                    "view", resource))
 
         # test "new" operation
         roles = ["writer", "editor"]
@@ -123,7 +123,11 @@ class AclTestCase(unittest.TestCase):
     def test_assertion(self):
         # set up assertion
         db = {'newsid': 1}
-        assertion = lambda acl, role, operation, resource: db['newsid'] == 10
+
+        def check(acl, role, operation, resource):
+            return db['newsid'] == 10
+
+        assertion = check
 
         # set up rules
         self.acl.add_role("writer2", parents=["writer"])
