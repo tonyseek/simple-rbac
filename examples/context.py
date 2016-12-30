@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 from rbac.acl import Registry
 from rbac.context import IdentityContext, PermissionDenied
@@ -29,6 +29,7 @@ acl.deny("bad man", None, "article")
 @context.set_roles_loader
 def first_load_roles():
     yield "staff"
+
 
 print "* Now you are %s." % ", ".join(context.load_roles())
 
@@ -69,6 +70,7 @@ except PermissionDenied:
 def second_load_roles():
     yield "editor"
 
+
 print "* Now you are %s." % ", ".join(context.load_roles())
 
 if edit_article_page() == "<edit>":
@@ -82,6 +84,7 @@ if edit_article_page() == "<edit>":
 @context.set_roles_loader
 def third_load_roles():
     yield "bad man"
+
 
 print "* Now you are %s." % ", ".join(context.load_roles())
 
