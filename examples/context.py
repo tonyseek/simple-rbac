@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 
 from rbac.acl import Registry
 from rbac.context import IdentityContext, PermissionDenied
