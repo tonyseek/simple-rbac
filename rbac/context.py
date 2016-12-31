@@ -29,8 +29,11 @@ class PermissionContext(object):
     def __exit__(self, exception_type, exception, traceback):
         self.in_context = False
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._check())
+
+    def __nonzero__(self):
+        return self.__bool__()
 
     def check(self):
         if not self._check():

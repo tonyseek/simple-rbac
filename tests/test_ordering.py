@@ -39,7 +39,7 @@ def test_role_evaluation_order_preserved(acl, context, evaluated_roles):
 
     # add roles as a list in the expected order (1 through 10)
     acl.add_resource('my_resource')
-    roles = [str(i) for i in xrange(10)]
+    roles = [str(i) for i in range(10)]
     for i, role in enumerate(roles):
         acl.add_role(role)
     context.set_roles_loader(lambda: roles)
@@ -84,7 +84,7 @@ def test_short_circuit_skip_allow(acl, context, evaluated_roles):
                                evaluated_roles, role_idx=1)
 
     acl.add_resource('my_resource')
-    roles = [str(i) for i in xrange(10)]
+    roles = [str(i) for i in range(10)]
     for i, role in enumerate(roles):
         acl.add_role(role)
         acl.allow(role, 'view', 'my_resource', assertion=assertion)
