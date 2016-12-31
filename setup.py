@@ -19,7 +19,6 @@ setup(
     packages=['rbac'],
     zip_safe=False,
     platforms='any',
-    test_suite='tests.run_tests',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',

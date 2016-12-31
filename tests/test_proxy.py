@@ -5,8 +5,6 @@ import unittest
 import rbac.acl
 import rbac.proxy
 
-import testacl
-
 
 # -----------
 # Mock Models
@@ -72,15 +70,15 @@ class ProxyTestCase(unittest.TestCase):
     def setUp(self):
         # create a acl and give it a proxy
         self.acl = rbac.acl.Registry()
-        self.proxy = rbac.proxy.RegistryProxy(self.acl,
-                role_factory=rbac.proxy.model_role_factory,
-                resource_factory=rbac.proxy.model_resource_factory)
+        self.proxy = rbac.proxy.RegistryProxy(
+            self.acl, role_factory=rbac.proxy.model_role_factory,
+            resource_factory=rbac.proxy.model_resource_factory)
 
         # create roles
         self.proxy.add_role(Role("staff"))
         self.proxy.add_role(Role("editor"), [Role.query("staff")])
-        self.proxy.add_role(Role("manager"),
-                [Role.query("staff"), Role.query("editor")])
+        self.proxy.add_role(
+            Role("manager"), [Role.query("staff"), Role.query("editor")])
 
         # create rules
         self.proxy.allow(Role.query("staff"), "create", Post)
@@ -153,8 +151,9 @@ class ProxyTestCase(unittest.TestCase):
         one_denied = ["staff", "nobody", "manager"]
         one_denied_with_allowed = ["staff", "editor", "manager"]
 
-        test_result = lambda roles: self.proxy.is_any_allowed(
-            (Role.query(r) for r in roles), "edit", Post)
+        def test_result(roles):
+            return self.proxy.is_any_allowed(
+                (Role.query(r) for r in roles), "edit", Post)
 
         for roles in (no_allowed, no_allowed_one):
             self.assertFalse(test_result(roles))
@@ -166,7 +165,7 @@ class ProxyTestCase(unittest.TestCase):
             self.assertFalse(test_result(roles))
 
 
-class CompatibilityTestCase(testacl.AclTestCase):
-    """Assert the proxy is compatibility with plain acl registry."""
+# class CompatibilityTestCase(testacl.AclTestCase):
+#     """Assert the proxy is compatibility with plain acl registry."""
 
-    registry_acl = lambda: rbac.proxy.RegistryProxy(rbac.acl.Registry())
+#     registry_acl = lambda: rbac.proxy.RegistryProxy(rbac.acl.Registry())
