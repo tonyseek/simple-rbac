@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
@@ -86,26 +85,26 @@ def main():
         message = Message(content=content, owner=current_user)
         db.add(message)
         db.commit()
-        print "%s has craeted a message: '%s'." % (
-            current_user.name.capitalize(), content)
+        print("%s has craeted a message: '%s'." % (
+            current_user.name.capitalize(), content))
 
     def edit_message(content, new_content):
         message = db.query(Message).filter_by(content=content).one()
 
         if not identity.check_permission("edit", message):
-            print "%s tried to edit the message '%s' but he will fail." % (
-                current_user.name.capitalize(), content)
+            print("%s tried to edit the message '%s' but he will fail." % (
+                current_user.name.capitalize(), content))
         else:
-            print "%s will edit the message '%s'." % (
-                current_user.name.capitalize(), content)
+            print("%s will edit the message '%s'." % (
+                current_user.name.capitalize(), content))
 
         with identity.check_permission("edit", message):
             message.content = new_content
             db.commit()
 
-        print "The message '%s' has been edit by %s," % \
-            (content, current_user.name.capitalize()),
-        print "the new content is '%s'" % new_content
+        print("The message '%s' has been edit by %s," % (
+            content, current_user.name.capitalize()))
+        print("the new content is '%s'" % new_content)
 
     # tonyseek signed in and create a message
     current_user = tonyseek
@@ -116,7 +115,7 @@ def main():
     try:
         edit_message("Please open the door.", "Please don't open the door.")
     except PermissionDenied:
-        print "Oh, the operation has been denied."
+        print("Oh, the operation has been denied.")
 
     # tonyseek signed in and edit his message
     current_user = tonyseek
