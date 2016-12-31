@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-
 from setuptools import setup
 
-with open('README.rst', 'r') as readme:
-    long_description = readme.read()
+with open('README.rst') as readme:
+    next(readme)
+    long_description = ''.join(readme).strip()
 
 setup(
     name='simple-rbac',
@@ -18,7 +16,7 @@ setup(
     license='MIT License',
     packages=['rbac'],
     zip_safe=False,
-    platforms='any',
+    platforms=['Any'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
